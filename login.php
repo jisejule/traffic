@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+include 'settings.php';
 include 'header.php';
 
 print '<html><head><title>Kampala Crash Collaboration</title><link rel="stylesheet" href="style.css" type="text/css" media="screen"></head><body>';
@@ -8,9 +8,9 @@ if ((isset($_POST['do'])) && ($_POST['do']=='register')) {
   draw_header('Register');
   $email = $_POST['email'];
   $pword = $_POST['pword'];
-  $conn = new mysqli("localhost","crashdata","gr4t3dfri2","crashdata");
+  $conn = new mysqli("localhost",$db_name,$db_password,$db_username);
 //TODO: CHECK USERNAME IS UNIQUE
-  $sql = sprintf("INSERT INTO users (email,pword) VALUES ('%s','%s')",mysqli_real_escape_string($conn,$email),mysqli_real_escape_string($conn,$pword));
+  $sql = sprintf("INSERT INTO traffic_users (email,pword) VALUES ('%s','%s')",mysqli_real_escape_string($conn,$email),mysqli_real_escape_string($conn,$pword));
 
   if ($conn->query($sql) === TRUE) {
     print "<p>Registered successfully. Please <a href='login.php?do=login'>login</a>.</p>";
@@ -23,8 +23,8 @@ if ((isset($_POST['do'])) && ($_POST['do']=='login')) {
   draw_header('Logging in');
   $email = $_POST['email'];
   $pword = $_POST['pword'];
-  $conn = new mysqli("localhost","crashdata","gr4t3dfri2","crashdata");
-  $sql = sprintf("SELECT userid, level, COUNT(*) AS totalcount FROM users WHERE email = '%s' AND pword = '%s';",mysqli_real_escape_string($conn,$email),mysqli_real_escape_string($conn,$pword));
+  $conn = new mysqli("localhost",$db_name,$db_password,$db_username);
+  $sql = sprintf("SELECT userid, level, COUNT(*) AS totalcount FROM traffic_users WHERE email = '%s' AND pword = '%s';",mysqli_real_escape_string($conn,$email),mysqli_real_escape_string($conn,$pword));
   $res = $conn->query($sql);
   $row = $res->fetch_assoc();
   if ($row['totalcount']==0)

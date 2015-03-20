@@ -2,13 +2,14 @@
 session_start();
 
 include 'header.php';
+include 'settings.php';
 
 
 
 //Generates the page to allow people to draw a grid over a document for segmentation.
 
-$conn = new mysqli("localhost","crashdata","gr4t3dfri2","crashdata");
-$query = sprintf("SELECT tablefile FROM tablefiles WHERE segmented=false ORDER BY rand() LIMIT 1");
+$conn = new mysqli("localhost",$db_username,$db_password,$db_name);
+$query = sprintf("SELECT tablefile FROM traffic_tablefiles WHERE segmented=false ORDER BY rand() LIMIT 1");
 $res = $conn->query($query);
 $conn->close();
 $data = mysqli_fetch_row($res);

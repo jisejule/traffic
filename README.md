@@ -19,7 +19,7 @@ To install and use this crowd-source system:
 CREATE DATABASE crashdata;
 USE crashdata;
 
-CREATE TABLE tablecorners (
+CREATE TABLE traffic_tablecorners (
 id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 userid INT(6) UNSIGNED,
 rows INT(6) UNSIGNED,
@@ -34,7 +34,7 @@ bottomrightx INT(6) UNSIGNED,
 bottomrighty INT(6) UNSIGNED,
 date TIMESTAMP);
 
-CREATE TABLE users (
+CREATE TABLE traffic_users (
 userid INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 firstname VARCHAR(30) NOT NULL,
 lastname VARCHAR(30) NOT NULL,
@@ -43,21 +43,21 @@ email VARCHAR(250),
 pword VARCHAR(50),
 reg_date TIMESTAMP);
 
-CREATE TABLE tablefiles ( tablefile INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, filename VARCHAR(30) UNIQUE, segmented BOOLEAN);
+CREATE TABLE traffic_tablefiles ( tablefile INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, filename VARCHAR(30) UNIQUE, segmented BOOLEAN);
 
-CREATE TABLE images (
+CREATE TABLE traffic_images (
 name VARCHAR(50) PRIMARY KEY,
 tablefile INT(6) UNSIGNED,
 row INT(6) UNSIGNED,
 col INT(6) UNSIGNED);
 
-CREATE TABLE results_col0 (
+CREATE TABLE traffic_results_col0 (
 userid INT(6) UNSIGNED,
 name VARCHAR(50),
 datetime DATETIME
 );
 
-CREATE TABLE results_col3 (
+CREATE TABLE traffic_results_col3 (
 userid INT(6) UNSIGNED,
 name VARCHAR(50),
 location VARCHAR(3000),
@@ -65,21 +65,21 @@ lat FLOAT(10,6),
 lon FLOAT(10,6)
 );
 
-CREATE TABLE results_col4 (
+CREATE TABLE traffic_results_col4 (
 userid INT(6) UNSIGNED,
 name VARCHAR(50),
 nature VARCHAR(50),
 hitandrun BOOLEAN
 );
 
-CREATE TABLE results_col6 (
+CREATE TABLE traffic_results_col6 (
 userid INT(6) UNSIGNED,
 name VARCHAR(50),
 vehicle_one VARCHAR(50),
 vehicle_two VARCHAR(50)
 );
 
-CREATE TABLE results_col7 (
+CREATE TABLE traffic_results_col7 (
 userid INT(6) UNSIGNED,
 name VARCHAR(50),
 fatality_one_genderage VARCHAR(50),

@@ -1,4 +1,5 @@
 <?php 
+include 'settings.php';
 
 $thresholdMin = 1; //number of assignments that have to be made before we try segmenting.
 
@@ -10,7 +11,14 @@ $thresholdMin = 1; //number of assignments that have to be made before we try se
 //userid = user's id
 //tablefile = 
 function segment_image($imagefile,$coords,$noRows,$tablefile,$conn) {
-     $src = imageCreateFromJpeg($imagefile); //TODO BEFORE segmenting check segments are inside image
+     print("Creating image from JPEG ($imagefile)...\n<br/>");
+     try {
+       $src = imagecreatefromjpeg($imagefile); //TODO BEFORE segmenting check segments are inside image
+     } catch (Exception $e) {
+       echo 'Caught exception: ',  $e->getMessage(), "\n"; 
+     }
+
+     print("done");
      $x1 = $coords[0];
      $y1 = $coords[1];
      $x2 = $coords[2];
@@ -49,7 +57,7 @@ function segment_image($imagefile,$coords,$noRows,$tablefile,$conn) {
          $height= round($tempnexty1-$tempy1)+$margin*2;
          $left = $tempx1-$margin;
          $top = $tempy1-$margin;
-         $scale = 7.2; //the actual scale is 4608.0/460.0 (10x) but the images are rescaled in the browser to 640px across: 4608/640=7.2
+         $scale = 7.2/2; //the actual scale is 4608.0/460.0 (10x) but the images are rescaled in the browser to 640px across: 4608/640=7.2
          $width = $width * $scale;
          $height = $height * $scale;
          $left = $left * $scale;
@@ -59,7 +67,7 @@ function segment_image($imagefile,$coords,$noRows,$tablefile,$conn) {
          
          if (($coli!=1) && ($coli!=2)) { //if we're not looking at columns 1 or 2...
            $name = md5(mt_rand()); //uniqid();
-           $sql = sprintf("INSERT INTO images (tablefile,name,row,col) VALUES (%d,'%s',%d,%d)",$tablefile,$name,$rowi,$coli);
+           $sql = sprintf("INSERT INTO traffic_images (tablefile,name,row,col) VALUES (%d,'%s',%d,%d)",$tablefile,$name,$rowi,$coli);
            if ($conn->query($sql) !== TRUE) {print "Error inserting image.".$sql . $conn->error;}
          
            imagecopy($dest, $src, 0, 0, $left, $top, $width, $height);
@@ -102,17 +110,17 @@ function calculate_mode($arr) {
   return $mode;
 }
 
-$conn = new mysqli("localhost","crashdata","gr4t3dfri2","crashdata");
+$conn = new mysqli("localhost",$db_username,$db_password,$db_name);
 if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 
-//$tablefile_res = $conn->query("SELECT distinct(tablefile) AS tablefile FROM tablecorners;");
-$tablefile_res = $conn->query("SELECT distinct(tablecorners.tablefile) AS tablefile FROM tablecorners JOIN tablefiles ON tablecorners.tablefile=tablefiles.tablefile WHERE tablefiles.segmented=false;");
+//$tablefile_res = $conn->query("SELECT distinct(tablefile) AS tablefile FROM traffic_tablecorners;");
+$tablefile_res = $conn->query("SELECT distinct(traffic_tablecorners.tablefile) AS tablefile FROM traffic_tablecorners JOIN traffic_tablefiles ON traffic_tablecorners.tablefile=traffic_tablefiles.tablefile WHERE traffic_tablefiles.segmented=false;");
 print "Segmenting...\n";
 while($tablefile_row = $tablefile_res->fetch_assoc()) {
   $tablefile = $tablefile_row['tablefile'];
   print "Image #$tablefile\n";
 //note: could do averaging in the sql but want opportunity to improve average in future...
-  $sql = sprintf("SELECT topleftx,toplefty,toprightx,toprighty,bottomleftx,bottomlefty,bottomrightx,bottomrighty,tablecorners.tablefile AS tablefile,rows,filename FROM tablecorners JOIN tablefiles ON tablecorners.tablefile=tablefiles.tablefile WHERE tablecorners.tablefile = %d",$tablefile);
+  $sql = sprintf("SELECT topleftx,toplefty,toprightx,toprighty,bottomleftx,bottomlefty,bottomrightx,bottomrighty,traffic_tablecorners.tablefile AS tablefile,rows,filename FROM traffic_tablecorners JOIN traffic_tablefiles ON traffic_tablecorners.tablefile=traffic_tablefiles.tablefile WHERE traffic_tablecorners.tablefile = %d",$tablefile);
   $res = $conn->query($sql);
 
 //list of names of columns we're getting from the SQL
@@ -138,6 +146,6 @@ while($tablefile_row = $tablefile_res->fetch_assoc()) {
   }
   $num_rows = calculate_mode($row_counts);
   segment_image('data/'.$filename,$mean_coords,$num_rows,$tablefile,$conn);
-  $conn->query(sprintf("UPDATE tablefiles SET segmented=true WHERE tablefile=%d;",$tablefile));
+  $conn->query(sprintf("UPDATE traffic_tablefiles SET segmented=true WHERE tablefile=%d;",$tablefile));
 }
 ?>

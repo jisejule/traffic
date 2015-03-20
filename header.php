@@ -1,17 +1,19 @@
 <?php
 
+include "settings.php";
+
 function get_numberdone()
 {
  if (isset($_SESSION['userid'])) {
    $userid = $_SESSION['userid'];
-   $conn = new mysqli("localhost","crashdata","gr4t3dfri2","crashdata");
+   $conn = new mysqli("localhost",$db_name,$db_password,$db_username);
    if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
    $total = 0;
    foreach (array(0,3,4,6,7) as $col) {
-    $total += $conn->query(sprintf("SELECT count(*) AS totalcount FROM results_col%d WHERE userid=%d;",$col,$userid))->fetch_assoc()['totalcount'];
+    $total += $conn->query(sprintf("SELECT count(*) AS totalcount FROM traffic_results_col%d WHERE userid=%d;",$col,$userid))->fetch_assoc()['totalcount'];
 
    }
-   $total += $conn->query(sprintf("SELECT count(*) AS totalcount FROM tablecorners WHERE userid=%d;",$userid))->fetch_assoc()['totalcount'];
+   $total += $conn->query(sprintf("SELECT count(*) AS totalcount FROM traffic_tablecorners WHERE userid=%d;",$userid))->fetch_assoc()['totalcount'];
    return $total;
  }
  return "?";

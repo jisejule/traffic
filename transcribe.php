@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+include 'settings.php';
 include 'header.php';
 
 //Generates the page to allow people to transcribe cells.
@@ -10,36 +11,36 @@ function process_submission()
   $userid = 0; //TODO Do this properly, cookies? etc.
   $name = $_GET['name'];
   $col = $_GET['col'];
-  $conn = new mysqli("localhost","crashdata","gr4t3dfri2","crashdata");
+  $conn = new mysqli("localhost",$db_username,$db_password,$db_name);
 
 //-------CODE SPECIFIC TO EACH COLUMN...----------
   if ($col==0) {
     $datetime = $_GET['date_year']."_".$_GET['date_month']."_".$_GET['date_day']." ".$_GET['time_hour'].":".$_GET['time_min'].":00";
-    $sql = sprintf("INSERT INTO results_col%d (userid,name,datetime) VALUES (%d,'%s','%s')",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn,$datetime));
+    $sql = sprintf("INSERT INTO traffic_results_col%d (userid,name,datetime) VALUES (%d,'%s','%s')",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn,$datetime));
   } 
   if ($col==3) {
     $rawmaploc = $_GET['map_loc'];
     preg_match('/\(([0-9.]*), ([0-9.]*)\)/is',$rawmaploc,$matches);
     $lon = $matches[1];
     $lat = $matches[2];
-    $sql = sprintf("INSERT INTO results_col%d (userid,name,location,lat,lon) VALUES (%d,'%s','%s',%0.4f,%0.4f)",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['location']),mysqli_real_escape_string($conn, $lat),mysqli_real_escape_string($conn, $lon));
+    $sql = sprintf("INSERT INTO traffic_results_col%d (userid,name,location,lat,lon) VALUES (%d,'%s','%s',%0.4f,%0.4f)",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['location']),mysqli_real_escape_string($conn, $lat),mysqli_real_escape_string($conn, $lon));
   } 
   if ($col==4) {
     $hitandrun = 'false'; 
     if (array_key_exists('hitandrun',$_GET)) {
       if ($_GET['hitandrun']=='on') { $hitandrun = 'true'; } 
     }
-    $sql = sprintf("INSERT INTO results_col%d (userid,name,nature,hitandrun) VALUES (%d,'%s','%s',%s)",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['nature']),$hitandrun);
+    $sql = sprintf("INSERT INTO traffic_results_col%d (userid,name,nature,hitandrun) VALUES (%d,'%s','%s',%s)",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['nature']),$hitandrun);
   }
   if ($col==6) {
-    $sql = sprintf("INSERT INTO results_col%d (userid,name,vehicle_one,vehicle_two) VALUES (%d,'%s','%s','%s')",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['vehicle_one']),mysqli_real_escape_string($conn, $_GET['vehicle_two']));
+    $sql = sprintf("INSERT INTO traffic_results_col%d (userid,name,vehicle_one,vehicle_two) VALUES (%d,'%s','%s','%s')",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['vehicle_one']),mysqli_real_escape_string($conn, $_GET['vehicle_two']));
   } 
   if ($col==7) {
     $nil = 'false'; 
     $more = 'false';
     if (array_key_exists('nil',$_GET)) {  if ($_GET['nil']=='on') { $nil = 'true'; } }
     if (array_key_exists('more',$_GET)) {  if ($_GET['more']=='on') { $more = 'true'; } }
-    $sql = sprintf("INSERT INTO results_col%d (userid,name,fatality_one_genderage,fatality_two_genderage,fatality_one_type,fatality_two_type, more, nil) VALUES (%d,'%s','%s','%s','%s','%s',%s,%s)",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['fatality_one_genderage']),mysqli_real_escape_string($conn, $_GET['fatality_two_genderage']),mysqli_real_escape_string($conn, $_GET['fatality_one_type']),mysqli_real_escape_string($conn, $_GET['fatality_two_type']),$more,$nil);
+    $sql = sprintf("INSERT INTO traffic_results_col%d (userid,name,fatality_one_genderage,fatality_two_genderage,fatality_one_type,fatality_two_type, more, nil) VALUES (%d,'%s','%s','%s','%s','%s',%s,%s)",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['fatality_one_genderage']),mysqli_real_escape_string($conn, $_GET['fatality_two_genderage']),mysqli_real_escape_string($conn, $_GET['fatality_one_type']),mysqli_real_escape_string($conn, $_GET['fatality_two_type']),$more,$nil);
   }
 //-------------------------------------------------
   $res = $conn->query($sql);
@@ -174,8 +175,8 @@ if ($_SESSION['userlevel'] <= 1) { //TODO: Only allow certain users to see colum
   }
 }
 
-$conn = new mysqli("localhost","crashdata","gr4t3dfri2","crashdata");
-$query = sprintf("SELECT tablefile, name, row, col FROM images WHERE col = %d ORDER BY rand() LIMIT 1",$col);
+$conn = $conn = new mysqli("localhost",$db_username,$db_password,$db_name);
+$query = sprintf("SELECT tablefile, name, row, col FROM traffic_images WHERE col = %d ORDER BY rand() LIMIT 1",$col);
 $res = $conn->query($query);
 $conn->close();
 $data = mysqli_fetch_row($res);
