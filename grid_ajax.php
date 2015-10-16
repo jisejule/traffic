@@ -1,7 +1,7 @@
 <?php 
 session_start();
 
-include "settings.php";
+require_once "settings.php";
 $userid = $_SESSION['userid'];
 
 //This script is called by the ajax request on the page to save the data.
@@ -15,17 +15,12 @@ $conn = new mysqli("localhost",$db_username,$db_password,$db_name);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 } 
-
-$sql = sprintf("INSERT INTO traffic_tablecorners (userid,tablefile,topleftx,toplefty,toprightx,toprighty,bottomleftx,bottomlefty,bottomrightx,bottomrighty,rows)
-VALUES (%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d)",
-$userid,$in['imageId'],$in['topleft'][0],$in['topleft'][1],$in['topright'][0],$in['topright'][1],$in['bottomleft'][0],$in['bottomleft'][1],$in['bottomright'][0],$in['bottomright'][1],$in['noRows']);
+print_r($in);
+$query = $conn->prepare("INSERT INTO traffic_tablecorners (userid,tablefile,topleftx,toplefty,toprightx,toprighty,bottomleftx,bottomlefty,bottomrightx,bottomrighty,rows)
+VALUES (?,?,?,?,?,?,?,?,?,?,?)"); //(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d)",
+$query->bind_param('iiiiiiiiiii',$userid,$in['imageId'],$in['topleft'][0],$in['topleft'][1],$in['topright'][0],$in['topright'][1],$in['bottomleft'][0],$in['bottomleft'][1],$in['bottomright'][0],$in['bottomright'][1],$in['noRows']);
+$query->execute();
 // Perform Query
-
-if ($conn->query($sql) === TRUE) {
-    echo "New record created successfully";
-} else {
-    echo "Error: " . $sql . $conn->error;
-}
-
+$query->close();
 $conn->close();
 ?>

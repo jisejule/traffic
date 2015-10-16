@@ -1,49 +1,96 @@
 <?php
 session_start();
 
-include 'settings.php';
-include 'header.php';
+require_once 'settings.php';
+require_once 'header.php';
 
 //Generates the page to allow people to transcribe cells.
 
 function process_submission()
 {
-  $userid = 0; //TODO Do this properly, cookies? etc.
+   if (isset($_SESSION['userid'])) {
+    $userid = $_SESSION['userid'];
+  } else
+  {
+    $userid = 0; 
+  }
   $name = $_GET['name'];
   $col = $_GET['col'];
+  global $db_username;
+  global $db_password;
+  global $db_name;
   $conn = new mysqli("localhost",$db_username,$db_password,$db_name);
+  if ($conn->connect_errno) {
+    printf("Connect failed: %s\n", $conn->connect_error);
+    exit();
+  }
 
 //-------CODE SPECIFIC TO EACH COLUMN...----------
   if ($col==0) {
     $datetime = $_GET['date_year']."_".$_GET['date_month']."_".$_GET['date_day']." ".$_GET['time_hour'].":".$_GET['time_min'].":00";
-    $sql = sprintf("INSERT INTO traffic_results_col%d (userid,name,datetime) VALUES (%d,'%s','%s')",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn,$datetime));
+    $query = $conn->prepare("INSERT INTO traffic_results_col0 (userid,name,datetime) VALUES (?,?,?)"); //(%d,'%s','%s');");
+    $query->bind_param('iss',$userid,$name,$datetime);
+    $query->execute();
+    $query->close();
   } 
   if ($col==3) {
     $rawmaploc = $_GET['map_loc'];
     preg_match('/\(([0-9.]*), ([0-9.]*)\)/is',$rawmaploc,$matches);
     $lon = $matches[1];
     $lat = $matches[2];
-    $sql = sprintf("INSERT INTO traffic_results_col%d (userid,name,location,lat,lon) VALUES (%d,'%s','%s',%0.4f,%0.4f)",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['location']),mysqli_real_escape_string($conn, $lat),mysqli_real_escape_string($conn, $lon));
+    $query = $conn->prepare("INSERT INTO traffic_results_col3 (userid,name,location,lat,lon) VALUES (?,?,?,?,?)"); //%d,'%s','%s',%0.4f,%0.4f)");
+    $query->bind_param("issdd",$userid,$name,$_GET['location'], $lat, $lon);
+    $query->execute();
+    $query->close();
   } 
   if ($col==4) {
-    $hitandrun = 'false'; 
+    $hitandrun = 0; 
     if (array_key_exists('hitandrun',$_GET)) {
-      if ($_GET['hitandrun']=='on') { $hitandrun = 'true'; } 
+      if ($_GET['hitandrun']=='on') { $hitandrun = 1; } 
     }
-    $sql = sprintf("INSERT INTO traffic_results_col%d (userid,name,nature,hitandrun) VALUES (%d,'%s','%s',%s)",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['nature']),$hitandrun);
+    $query = $conn->prepare("INSERT INTO traffic_results_col4 (userid,name,nature,hitandrun) VALUES (?,?,?,?)");
+    $query->bind_param("issi",$userid,$name,$_GET['nature'],$hitandrun);
+    $query->execute();
+    $query->close();
   }
   if ($col==6) {
-    $sql = sprintf("INSERT INTO traffic_results_col%d (userid,name,vehicle_one,vehicle_two) VALUES (%d,'%s','%s','%s')",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['vehicle_one']),mysqli_real_escape_string($conn, $_GET['vehicle_two']));
+    $query = $conn->prepare("INSERT INTO traffic_results_col6 (userid,name,vehicle_one,vehicle_two) VALUES (?,?,?,?)");
+    $query->bind_param("isss",$userid,$name,$_GET['vehicle_one'],$_GET['vehicle_two']);
+    $query->execute();
+    $query->close();
   } 
   if ($col==7) {
-    $nil = 'false'; 
-    $more = 'false';
-    if (array_key_exists('nil',$_GET)) {  if ($_GET['nil']=='on') { $nil = 'true'; } }
-    if (array_key_exists('more',$_GET)) {  if ($_GET['more']=='on') { $more = 'true'; } }
-    $sql = sprintf("INSERT INTO traffic_results_col%d (userid,name,fatality_one_genderage,fatality_two_genderage,fatality_one_type,fatality_two_type, more, nil) VALUES (%d,'%s','%s','%s','%s','%s',%s,%s)",$col,$userid,mysqli_real_escape_string($conn,$name),mysqli_real_escape_string($conn, $_GET['fatality_one_genderage']),mysqli_real_escape_string($conn, $_GET['fatality_two_genderage']),mysqli_real_escape_string($conn, $_GET['fatality_one_type']),mysqli_real_escape_string($conn, $_GET['fatality_two_type']),$more,$nil);
+    $nil = 0; 
+    $more = 0;
+    if (array_key_exists('nil',$_GET)) {  if ($_GET['nil']=='on') { $nil = 1; } }
+    if (array_key_exists('more',$_GET)) {  if ($_GET['more']=='on') { $more = 1; } }
+    $query = $conn->prepare("INSERT INTO traffic_results_col7 (userid,name,fatality_one_genderage,fatality_two_genderage,fatality_one_type,fatality_two_type, more, nil) VALUES (?,?,?,?,?,?,?,?)");
+   $query->bind_param('isssssii',$userid, $name, $_GET['fatality_one_genderage'], $_GET['fatality_two_genderage'], $_GET['fatality_one_type'], $_GET['fatality_two_type'], $more,$nil);
+    $query->execute();
+    $query->close();
+  }
+  if ($col==8) {
+    $nil = 0; 
+    $more = 0;
+    if (array_key_exists('nil',$_GET)) {  if ($_GET['nil']=='on') { $nil = 1; } }
+    if (array_key_exists('more',$_GET)) {  if ($_GET['more']=='on') { $more = 1; } }
+    $query = $conn->prepare("INSERT INTO traffic_results_col8 (userid,name,injury_one_genderage,injury_two_genderage,injury_one_type,injury_two_type, more, nil) VALUES (?,?,?,?,?,?,?,?)");
+   $query->bind_param('isssssii',$userid, $name, $_GET['injury_one_genderage'], $_GET['injury_two_genderage'], $_GET['injury_one_type'], $_GET['injury_two_type'], $more,$nil);
+    $query->execute();
+    $query->close();
+  }
+  if ($col==9) {
+    $nil = 0; 
+    $more = 0;
+    if (array_key_exists('nil',$_GET)) {  if ($_GET['nil']=='on') { $nil = 1; } }
+    if (array_key_exists('more',$_GET)) {  if ($_GET['more']=='on') { $more = 1; } }
+    $query = $conn->prepare("INSERT INTO traffic_results_col9 (userid,name,injury_one_genderage,injury_two_genderage,injury_one_type,injury_two_type, more, nil) VALUES (?,?,?,?,?,?,?,?)");
+   $query->bind_param('isssssii',$userid, $name, $_GET['injury_one_genderage'], $_GET['injury_two_genderage'], $_GET['injury_one_type'], $_GET['injury_two_type'], $more,$nil);
+    $query->execute();
+    $query->close();
   }
 //-------------------------------------------------
-  $res = $conn->query($sql);
+
   $conn->close();
 }
 
@@ -71,7 +118,7 @@ function draw_map($id,$title,$blurb) #note, the 'id' parameter is not used, and 
         map = new google.maps.Map(mapCanvas, mapOptions);
         marker = new google.maps.Marker({
           position: new google.maps.LatLng(0,0), 
-          map: map,
+          map: map
          // draggable:true
          });
 
@@ -195,7 +242,7 @@ print "<input type='hidden' name='col' value='$col' />";
 //-------CODE SPECIFIC TO EACH COLUMN...----------
 if ($col==0) { //date and time
   draw_date_picker('date','Date of collision','');
-  draw_time_picker('time','Time of collision','There might be more than one date or time in the image, enter the first one of each.');
+  draw_time_picker('time','Time of collision','There might be more than one pair of dates and times in the image, enter the <b>earliest</b> pair.');
 }
 //col 1 and 2 contain private info - left out
 if ($col==3) { //location
@@ -215,6 +262,7 @@ draw_radio_buttons('vehicle_one','Vehicle involved #1',array(
 'light omnibus'=>'light omnibus',
 'light goods vehicle'=>'light goods vehicle',
 'medium goods vehicle'=>'medium goods vehicle',
+'heavy goods vehicle'=>'heavy goods vehicle',
 'fuel truck'=>'fuel truck',
 'motor cycle'=>'motor cycle',
 'dual purpose vehicle'=>'dual purpose vehicle',
@@ -227,6 +275,7 @@ draw_radio_buttons('vehicle_two','Vehicle involved #2 <br />(if applicable)',arr
 'light omnibus'=>'light omnibus',
 'light goods vehicle'=>'light goods vehicle',
 'medium goods vehicle'=>'medium goods vehicle',
+'heavy goods vehicle'=>'heavy goods vehicle',
 'fuel truck'=>'fuel truck',
 'motor cycle'=>'motor cycle',
 'dual purpose vehicle'=>'dual purpose vehicle',
@@ -250,6 +299,38 @@ draw_select_box('fatality_two_genderage','Gender/Age',array('none'=>'(none)','ma
 draw_select_box('fatality_two_type','Situation',array('none'=>'(none)','cyclist'=>'Cyclist','motorcycle'=>'Motor Cycle','pedestrian'=>'Pedestrian','driver'=>'Driver','passenger'=>'Passenger','other'=>'Other'),'Situation/involvement of the person');
 print "<br />";
   draw_checkbox('more','More?','Were there more than two fatalities?');
+}
+
+if ($col==8) { //serious injuries
+print "<h1>Serious Injuries</h1>";
+print "<p>The people who were seriously injured in the collision are recorded such that, if a male adult pedestrian was seriously injured, the form would say <span class='fixed'>'1 M/A pedestrian'</span>. If a female child (junior) passenger was seriously injured, it would be recorded as <span class='fixed'>'1 F/J passenger'</span>.</p>";
+print "<br />";
+  draw_checkbox('nil','No serious injuries reported?','Did the police report "nil"?');
+print "<br /><h2>Injury #1</h2>";
+draw_select_box('injury_one_genderage','Gender/Age',array('none'=>'(none)','ma'=>'M/A','fa'=>'F/A','mj'=>'M/J','fj'=>'F/J'),'Gender and age of the person');
+draw_select_box('injury_one_type','Situation',array('none'=>'(none)','cyclist'=>'Cyclist','motorcycle'=>'Motor Cycle','pedestrian'=>'Pedestrian','driver'=>'Driver','passenger'=>'Passenger','other'=>'Other'),'Situation/involvement of the person');
+
+print "<br /><p>Injury #2</h2>";
+draw_select_box('injury_two_genderage','Gender/Age',array('none'=>'(none)','ma'=>'M/A','fa'=>'F/A','mj'=>'M/J','fj'=>'F/J'),'Gender and age of the person');
+draw_select_box('injury_two_type','Situation',array('none'=>'(none)','cyclist'=>'Cyclist','motorcycle'=>'Motor Cycle','pedestrian'=>'Pedestrian','driver'=>'Driver','passenger'=>'Passenger','other'=>'Other'),'Situation/involvement of the person');
+print "<br />";
+  draw_checkbox('more','More?','Were there more than two people injured?');
+}
+
+if ($col==9) { //slight injuries
+print "<h1>Slight Injuries</h1>";
+print "<p>The people who were slightly injured in the collision are recorded such that, if a male adult pedestrian was injured, the form would say <span class='fixed'>'1 M/A pedestrian'</span>. If a female child (junior) passenger was injured, it would be recorded as <span class='fixed'>'1 F/J passenger'</span>.</p>";
+print "<br />";
+  draw_checkbox('nil','No slight injuries reported?','Did the police report "nil"?');
+print "<br /><h2>Injury #1</h2>";
+draw_select_box('injury_one_genderage','Gender/Age',array('none'=>'(none)','ma'=>'M/A','fa'=>'F/A','mj'=>'M/J','fj'=>'F/J'),'Gender and age of the person');
+draw_select_box('injury_one_type','Situation',array('none'=>'(none)','cyclist'=>'Cyclist','motorcycle'=>'Motor Cycle','pedestrian'=>'Pedestrian','driver'=>'Driver','passenger'=>'Passenger','other'=>'Other'),'Situation/involvement of the person');
+
+print "<br /><p>Injury #2</h2>";
+draw_select_box('injury_two_genderage','Gender/Age',array('none'=>'(none)','ma'=>'M/A','fa'=>'F/A','mj'=>'M/J','fj'=>'F/J'),'Gender and age of the person');
+draw_select_box('injury_two_type','Situation',array('none'=>'(none)','cyclist'=>'Cyclist','motorcycle'=>'Motor Cycle','pedestrian'=>'Pedestrian','driver'=>'Driver','passenger'=>'Passenger','other'=>'Other'),'Situation/involvement of the person');
+print "<br />";
+  draw_checkbox('more','More?','Were there more than two people injured?');
 }
 //---------------------------------------------------
 

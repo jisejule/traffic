@@ -1,19 +1,33 @@
 <?php
 session_start();
 
-include 'header.php';
-include 'settings.php';
-
-
+require_once 'header.php';
 
 //Generates the page to allow people to draw a grid over a document for segmentation.
 
+require_once('settings.php');
 $conn = new mysqli("localhost",$db_username,$db_password,$db_name);
-$query = sprintf("SELECT tablefile FROM traffic_tablefiles WHERE segmented=false ORDER BY rand() LIMIT 1");
-$res = $conn->query($query);
+$query = $conn->prepare("SELECT tablefile, subdir FROM traffic_tablefiles WHERE segmented=false ORDER BY rand() LIMIT 1");
+##$query->bind_param('',) #no parameters
+$query->execute();
+$query->bind_result($imageId, $subdir);
+$query->fetch(); #only need to do once.
+$query->close();
+//$data = mysqli_fetch_row($res);
+//$imageId = $data[0];
+//$subdir = $data[1];
+$query = $conn->prepare("SELECT width FROM traffic_tablesources WHERE subdir=?");
+$query->bind_param('s',$subdir);
+$query->execute();
+$query->bind_result($width);
+$widths = [];
+while ($query->fetch()) {
+  $widths[] = $width;
+}
+$query->close();
+
+
 $conn->close();
-$data = mysqli_fetch_row($res);
-$imageId = $data[0];
 ?>
 
 
@@ -28,16 +42,18 @@ $imageId = $data[0];
 <?php echo "<script> imageFile = 'nextImageForSegmentation.php?id=$imageId'; imageId=$imageId;"; ?>
 
   $(document).ready(function() {
+//	 console.log( "TEST" );
    $('button#moreRows').click(function() {changeRows(1);}) 
    $('button#lessRows').click(function() {changeRows(-1);})
    $('button#next').click(function() {	 	
+//	 console.log( "Sending data" );
 	$.ajax({
 	type: "GET",
 	url: "grid_ajax.php",
-	data: {topleft, topright, bottomleft, bottomright, noRows, imageId}, //todo use json
+	data: {'topleft':topleft, 'topright':topright, 'bottomleft':bottomleft, 'bottomright':bottomright, 'noRows':noRows, 'imageId':imageId}
 	})
 	.done(function( msg ) {
-	// console.log( "Data Saved: " + msg );
+//	 console.log( "Data Saved: " + msg );
          location.reload();
 	});
      
@@ -48,7 +64,7 @@ $imageId = $data[0];
   function changeRows(delta) {
     n = $('input#numRows').val();
     n = parseInt(n) + delta;
-    if (isNaN(n)) {n = 4;}
+    if (isNaN(n)) {n = 1;}
     if (n<1) { n = 1; }
     if (n>6) { n = 6; }
     $('input#numRows').val(n);
@@ -95,9 +111,9 @@ $imageId = $data[0];
      lHorGrid.attr("path",p);
   }
   initCorners = [100,100,200,200];
-  noRows = 4;
+  noRows = 1;
   noCols = 12;
-  colWidths = [13.2,12.5,12.6,8.2,8.0,4.0,8.0,8.2,8.0,8.0,4.0,5.3];
+  colWidths = [<?php print(implode(',',$widths)) ?>];
 
   radius = 20;
   topleft = [initCorners[0], initCorners[1]];
@@ -107,12 +123,13 @@ $imageId = $data[0];
    window.onload = function () {
     R = Raphael(canvas_container, "667", "500");
     R.image(imageFile,0,0,640,480);
+     lHorGrid = R.path([]);
+     recalcGrid();
      cTopLeft = R.circle(topleft[0],topleft[1], radius).attr({fill: "hsb(0, 1, 1)", stroke: "none", opacity: .5}),
      cTopRight = R.circle(topright[0],topright[1], radius).attr({fill: "hsb(.3, 1, 1)", stroke: "none", opacity: .5}),
      cBottomLeft = R.circle(bottomleft[0],bottomleft[1], radius).attr({fill: "hsb(.6, 1, 1)", stroke: "none", opacity: .5}),
      cBottomRight = R.circle(bottomright[0],bottomright[1], radius).attr({fill: "hsb(.8, 1, 1)", stroke: "none", opacity: .5});
-     lHorGrid = R.path([]);
-     recalcGrid();
+     
      
     var start = function () {
      this.ox = this.attr("cx");
@@ -156,13 +173,13 @@ $imageId = $data[0];
  <body>
  <?php draw_header('Segmentation'); ?>
  <div style="width:600px; margin-left:30px;">
- <p>Drag the coloured circles to align the grid over the photographed table. Once you are happy it's in the right place, press the 'Next' button.</p>
+ <p>Drag the coloured circles to align the grid over the photographed table. It often fits best if you <em>don't include the far left and right columns</em>. Adjust the number of rows at the bottom using the + and - buttons. Once you are happy it's in the right place, with the right number of rows, press 'Next'.</p>
  </div>
  <div id="canvas_container" style="width:667px; height:500px;"></div>
  <div style="margin-top:15px;">
  <p>
  <span>
- Number of rows<button style="width:20px" id="lessRows">-</button><input type="text" size=1 value="4" style="width:20px;" disabled="disabled" id="numRows"></input><button style="width:20px" id="moreRows">+</button>
+ Number of rows<button style="width:20px" id="lessRows">-</button><input type="text" size=1 value="1" style="width:20px;" disabled="disabled" id="numRows"></input><button style="width:20px" id="moreRows">+</button>
  </span>
  <span style="margin-right:10px; margin-left:400px;">
  <button style="width:100px; height:50px;" id="next">Next</button>
