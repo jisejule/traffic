@@ -74,7 +74,7 @@ function segment_image($imagefile,$coords,$noRows,$tablefile,$conn,$colWidths,$c
          $coli = $columnIds[$actualcoli]; //not all the tables have same column ordering.
          if (($coli!=1) && ($coli!=2) && ($coli>=0)) { //if we're not looking at columns 1 or 2, and column>=0
            $name = md5(mt_rand()); //uniqid();
-           $query = $conn->prepare("INSERT INTO traffic_images (tablefile,name,row,col) VALUES (?,?,?,?)");
+           $query = $conn->prepare("INSERT INTO traffic_images (tablefile,name,row,col,broken) VALUES (?,?,?,?,FALSE)");
            $query->bind_param('ssss',$tablefile,$name,$rowi,$coli);
            
            //$sql = sprintf("INSERT INTO traffic_images (tablefile,name,row,col) VALUES (%d,'%s',%d,%d)",$tablefile,$name,$rowi,$coli);

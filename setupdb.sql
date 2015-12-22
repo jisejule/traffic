@@ -58,7 +58,8 @@
 	name VARCHAR(50) PRIMARY KEY,
 	tablefile INT(6) UNSIGNED,
 	row INT(6) UNSIGNED,
-	col INT(6) UNSIGNED);
+	col INT(6) UNSIGNED,
+	broken BOOL);
 
 	CREATE TABLE traffic_results_col0 (
 	userid INT(6) UNSIGNED,

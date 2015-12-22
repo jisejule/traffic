@@ -16,6 +16,7 @@ function process_submission()
   }
   $name = $_GET['name'];
   $col = $_GET['col'];
+  $broken = $_GET['broken'];
   global $db_username;
   global $db_password;
   global $db_name;
@@ -25,69 +26,79 @@ function process_submission()
     exit();
   }
 
-//-------CODE SPECIFIC TO EACH COLUMN...----------
-  if ($col==0) {
-    $datetime = $_GET['date_year']."_".$_GET['date_month']."_".$_GET['date_day']." ".$_GET['time_hour'].":".$_GET['time_min'].":00";
-    $query = $conn->prepare("INSERT INTO traffic_results_col0 (userid,name,datetime) VALUES (?,?,?)"); //(%d,'%s','%s');");
-    $query->bind_param('iss',$userid,$name,$datetime);
-    $query->execute();
-    $query->close();
-  } 
-  if ($col==3) {
-    $rawmaploc = $_GET['map_loc'];
-    preg_match('/\(([0-9.]*), ([0-9.]*)\)/is',$rawmaploc,$matches);
-    $lon = $matches[1];
-    $lat = $matches[2];
-    $query = $conn->prepare("INSERT INTO traffic_results_col3 (userid,name,location,lat,lon) VALUES (?,?,?,?,?)"); //%d,'%s','%s',%0.4f,%0.4f)");
-    $query->bind_param("issdd",$userid,$name,$_GET['location'], $lat, $lon);
-    $query->execute();
-    $query->close();
-  } 
-  if ($col==4) {
-    $hitandrun = 0; 
-    if (array_key_exists('hitandrun',$_GET)) {
-      if ($_GET['hitandrun']=='on') { $hitandrun = 1; } 
-    }
-    $query = $conn->prepare("INSERT INTO traffic_results_col4 (userid,name,nature,hitandrun) VALUES (?,?,?,?)");
-    $query->bind_param("issi",$userid,$name,$_GET['nature'],$hitandrun);
+//---if the user reported the image to be broken, we need to record this, and give them the next image
+  if ($broken=='true') {
+    $query = $conn->prepare("UPDATE traffic_images SET broken=TRUE WHERE name=?");
+    $query->bind_param('s',$name);
     $query->execute();
     $query->close();
   }
-  if ($col==6) {
-    $query = $conn->prepare("INSERT INTO traffic_results_col6 (userid,name,vehicle_one,vehicle_two) VALUES (?,?,?,?)");
-    $query->bind_param("isss",$userid,$name,$_GET['vehicle_one'],$_GET['vehicle_two']);
-    $query->execute();
-    $query->close();
-  } 
-  if ($col==7) {
-    $nil = 0; 
-    $more = 0;
-    if (array_key_exists('nil',$_GET)) {  if ($_GET['nil']=='on') { $nil = 1; } }
-    if (array_key_exists('more',$_GET)) {  if ($_GET['more']=='on') { $more = 1; } }
-    $query = $conn->prepare("INSERT INTO traffic_results_col7 (userid,name,fatality_one_genderage,fatality_two_genderage,fatality_one_type,fatality_two_type, more, nil) VALUES (?,?,?,?,?,?,?,?)");
-   $query->bind_param('isssssii',$userid, $name, $_GET['fatality_one_genderage'], $_GET['fatality_two_genderage'], $_GET['fatality_one_type'], $_GET['fatality_two_type'], $more,$nil);
-    $query->execute();
-    $query->close();
-  }
-  if ($col==8) {
-    $nil = 0; 
-    $more = 0;
-    if (array_key_exists('nil',$_GET)) {  if ($_GET['nil']=='on') { $nil = 1; } }
-    if (array_key_exists('more',$_GET)) {  if ($_GET['more']=='on') { $more = 1; } }
-    $query = $conn->prepare("INSERT INTO traffic_results_col8 (userid,name,injury_one_genderage,injury_two_genderage,injury_one_type,injury_two_type, more, nil) VALUES (?,?,?,?,?,?,?,?)");
-   $query->bind_param('isssssii',$userid, $name, $_GET['injury_one_genderage'], $_GET['injury_two_genderage'], $_GET['injury_one_type'], $_GET['injury_two_type'], $more,$nil);
-    $query->execute();
-    $query->close();
-  }
-  if ($col==9) {
-    $nil = 0; 
-    $more = 0;
-    if (array_key_exists('nil',$_GET)) {  if ($_GET['nil']=='on') { $nil = 1; } }
-    if (array_key_exists('more',$_GET)) {  if ($_GET['more']=='on') { $more = 1; } }
-    $query = $conn->prepare("INSERT INTO traffic_results_col9 (userid,name,injury_one_genderage,injury_two_genderage,injury_one_type,injury_two_type, more, nil) VALUES (?,?,?,?,?,?,?,?)");
-   $query->bind_param('isssssii',$userid, $name, $_GET['injury_one_genderage'], $_GET['injury_two_genderage'], $_GET['injury_one_type'], $_GET['injury_two_type'], $more,$nil);
-    $query->execute();
-    $query->close();
+  else
+  {
+ //-------CODE SPECIFIC TO EACH COLUMN...----------
+   if ($col==0) {
+     $datetime = $_GET['date_year']."_".$_GET['date_month']."_".$_GET['date_day']." ".$_GET['time_hour'].":".$_GET['time_min'].":00";
+     $query = $conn->prepare("INSERT INTO traffic_results_col0 (userid,name,datetime) VALUES (?,?,?)"); //(%d,'%s','%s');");
+     $query->bind_param('iss',$userid,$name,$datetime);
+     $query->execute();
+     $query->close();
+   } 
+   if ($col==3) {
+     $rawmaploc = $_GET['map_loc'];
+     preg_match('/\(([0-9.]*), ([0-9.]*)\)/is',$rawmaploc,$matches);
+     $lon = $matches[1];
+     $lat = $matches[2];
+     $query = $conn->prepare("INSERT INTO traffic_results_col3 (userid,name,location,lat,lon) VALUES (?,?,?,?,?)"); //%d,'%s','%s',%0.4f,%0.4f)");
+     $query->bind_param("issdd",$userid,$name,$_GET['location'], $lat, $lon);
+     $query->execute();
+     $query->close();
+   } 
+   if ($col==4) {
+     $hitandrun = 0; 
+     if (array_key_exists('hitandrun',$_GET)) {
+       if ($_GET['hitandrun']=='on') { $hitandrun = 1; } 
+     }
+     $query = $conn->prepare("INSERT INTO traffic_results_col4 (userid,name,nature,hitandrun) VALUES (?,?,?,?)");
+     $query->bind_param("issi",$userid,$name,$_GET['nature'],$hitandrun);
+     $query->execute();
+     $query->close();
+   }
+   if ($col==6) {
+     $query = $conn->prepare("INSERT INTO traffic_results_col6 (userid,name,vehicle_one,vehicle_two) VALUES (?,?,?,?)");
+     $query->bind_param("isss",$userid,$name,$_GET['vehicle_one'],$_GET['vehicle_two']);
+     $query->execute();
+     $query->close();
+   } 
+   if ($col==7) {
+     $nil = 0; 
+     $more = 0;
+     if (array_key_exists('nil',$_GET)) {  if ($_GET['nil']=='on') { $nil = 1; } }
+     if (array_key_exists('more',$_GET)) {  if ($_GET['more']=='on') { $more = 1; } }
+     $query = $conn->prepare("INSERT INTO traffic_results_col7 (userid,name,fatality_one_genderage,fatality_two_genderage,fatality_one_type,fatality_two_type, more, nil) VALUES (?,?,?,?,?,?,?,?)");
+    $query->bind_param('isssssii',$userid, $name, $_GET['fatality_one_genderage'], $_GET['fatality_two_genderage'], $_GET['fatality_one_type'], $_GET['fatality_two_type'], $more,$nil);
+     $query->execute();
+     $query->close();
+   }
+   if ($col==8) {
+     $nil = 0; 
+     $more = 0;
+     if (array_key_exists('nil',$_GET)) {  if ($_GET['nil']=='on') { $nil = 1; } }
+     if (array_key_exists('more',$_GET)) {  if ($_GET['more']=='on') { $more = 1; } }
+     $query = $conn->prepare("INSERT INTO traffic_results_col8 (userid,name,injury_one_genderage,injury_two_genderage,injury_one_type,injury_two_type, more, nil) VALUES (?,?,?,?,?,?,?,?)");
+    $query->bind_param('isssssii',$userid, $name, $_GET['injury_one_genderage'], $_GET['injury_two_genderage'], $_GET['injury_one_type'], $_GET['injury_two_type'], $more,$nil);
+     $query->execute();
+     $query->close();
+   }
+   if ($col==9) {
+     $nil = 0; 
+     $more = 0;
+     if (array_key_exists('nil',$_GET)) {  if ($_GET['nil']=='on') { $nil = 1; } }
+     if (array_key_exists('more',$_GET)) {  if ($_GET['more']=='on') { $more = 1; } }
+     $query = $conn->prepare("INSERT INTO traffic_results_col9 (userid,name,injury_one_genderage,injury_two_genderage,injury_one_type,injury_two_type, more, nil) VALUES (?,?,?,?,?,?,?,?)");
+     $query->bind_param('isssssii',$userid, $name, $_GET['injury_one_genderage'], $_GET['injury_two_genderage'], $_GET['injury_one_type'], $_GET['injury_two_type'], $more,$nil);
+     $query->execute();
+     $query->close();
+   }
   }
 //-------------------------------------------------
 
@@ -201,14 +212,21 @@ function draw_checkbox($id,$title,$label,$blurb)
 if (array_key_exists('name',$_GET)) {
   process_submission(); //handle if user is submitting a datapoint.
 }
+?>
 
-print '<html lang="en">
+
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Kampala Crash Collaboration</title>
-<link rel="stylesheet" href="style.css" type="text/css" media="screen">
-</head><body>';
+ <meta charset="utf-8">
+ <title>Kampala Crash Collaboration</title>
+ <link rel="stylesheet" href="style.css" type="text/css" media="screen">
+ <script src="jquery-1.11.2.min.js"></script>
+</head>
 
+
+<body>
+
+<?php
 draw_header('Transcription');
 
 
@@ -223,7 +241,7 @@ if ($_SESSION['userlevel'] <= 1) { //TODO: Only allow certain users to see colum
 }
 
 $conn = $conn = new mysqli("localhost",$db_username,$db_password,$db_name);
-$query = sprintf("SELECT tablefile, name, row, col FROM traffic_images WHERE col = %d ORDER BY rand() LIMIT 1",$col);
+$query = sprintf("SELECT tablefile, name, row, col FROM traffic_images WHERE col = %d AND broken != 1 ORDER BY rand() LIMIT 1",$col);
 $res = $conn->query($query);
 $conn->close();
 $data = mysqli_fetch_row($res);
@@ -333,11 +351,23 @@ print "<br />";
   draw_checkbox('more','More?','Were there more than two people injured?');
 }
 //---------------------------------------------------
-
-print "<br />";
-print "<input class='position:relative; left:40px;' type='submit' value='Submit' />";
-print "</form></div>";
-print "</span>";
-print "</body>";
-print "</html>";
 ?>
+
+<br />
+<input style='position:relative; left:40px;' type='submit' id='submit' value='Submit' />
+<br /><p class='blurb'><br />If the image isn't how you expect, or you think it might contain private information, report it as broken:</p>
+<input type='hidden' name='broken' value='false' id='broken' />
+<input style='position:relative; left:40px;' type='button' id='broken_button' value='Broken' />
+ <script>
+  $(document).ready(function() {
+   $('input#broken_button').click(function() {
+	$('input#broken').val('true');
+	$('input#submit').click();
+   });
+  });
+ </script>
+
+</form></div>
+</span>
+</body>
+</html>
