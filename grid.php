@@ -45,7 +45,7 @@ $conn->close();
 //	 console.log( "TEST" );
    $('button#moreRows').click(function() {changeRows(1);}) 
    $('button#lessRows').click(function() {changeRows(-1);})
-   $('button#next').click(function() {	 	
+   $('button#next').click(function() {
 //	 console.log( "Sending data" );
 	$.ajax({
 	type: "GET",
@@ -58,6 +58,10 @@ $conn->close();
 	});
      
     });
+   $('button#skip').click(function() {
+	location.reload(); //skip
+    });
+
   });
   
 
@@ -181,10 +185,11 @@ $conn->close();
  <span>
  Number of rows<button style="width:20px" id="lessRows">-</button><input type="text" size=1 value="1" style="width:20px;" disabled="disabled" id="numRows"></input><button style="width:20px" id="moreRows">+</button>
  </span>
- <span style="margin-right:10px; margin-left:400px;">
+ <span style="margin-right:10px; margin-left:300px;">
  <button style="width:100px; height:50px;" id="next">Next</button>
- </p>
+ <button style="width:100px; height:50px;" id="skip">Skip</button>
  </span>
+ </p>
  </div>
  </body>
 </html>
