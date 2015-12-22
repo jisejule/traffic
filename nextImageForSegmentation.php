@@ -9,6 +9,7 @@ $conn->close();
 $data = mysqli_fetch_row($res);
 //print_r($data);
 $sourcefile = "small_data/".$data[0]."/".$data[1];
+error_log(print_r($sourcefile, TRUE)); 
 $im = imageCreateFromJpeg($sourcefile);
 header('Content-Type: image/jpeg');
 imagejpeg($im);
