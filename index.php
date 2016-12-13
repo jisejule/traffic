@@ -12,18 +12,11 @@ print '<html lang="en">
 draw_header('');
 
 print "<div class='user_form'>";
-print "<p>This project aims to transcribe the data about the<br/>";
-print "road crashes that happen in Kampala, from the handwritten<br/>";
-print "police records to a map, to help the city authority improve<br/>";
-print "road safety, assist civil society campaign and to increase<br/>";
-print "awareness around this really important issue.<br/>";
-print "<br/>";
-print "If you want credit for your work and maybe a gift - please register.<br/>";
+print "<p>We want volunteers like yourself to help get car crash data out of paper books and into the public domain. Help us improve road safety in Kampala!</p><br />";
+print "<p><a href='login.php?do=register'>Register</a> if you want to receive rewards for helping.</p>";
 print "<br/>";
 print "<p>Select what you would like to help work on:</p><br />";
-
-print "<p><a href='grid.php'>Alignment</a> and segmentation. (<b>THIS IS PRIORITY</b>)</p>";
-print "<p> <br/>Of less importance for now:</p>";
+print "<p><a href='grid.php'>Aligning images</a>.</p>";
 print "<p>The <a href='transcribe.php?col=0'>dates and times</a>.</p>";
 print "<p>The <a href='transcribe.php?col=3'>locations</a>.</p>";
 print "<p>The <a href='transcribe.php?col=4'>severity</a> of the collisions.</p>";
@@ -34,6 +27,9 @@ if ($_SESSION['userlevel']>1) {
   print "<p><a href='transcribe.php?col=8'>Serious Injuries</a></p>";
   print "<p><a href='transcribe.php?col=9'>Other Injuries</a></p>";
 }
+
+print "</p><br />";
+print "</div>";
 print "</body>";
 print "</html>";
 ?>

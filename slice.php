@@ -1,7 +1,7 @@
 <?php 
 require_once 'settings.php';
 
-$thresholdMin = 3; //number of assignments that have to be made before we try segmenting.
+$thresholdMin = 1; //number of assignments that have to be made before we try segmenting.
 if (array_key_exists('threshold',$_GET)) { 
   if (!is_numeric($_GET['threshold'])) {
     print "Error: Not a numeric threshold";

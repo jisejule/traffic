@@ -58,6 +58,7 @@ if ($_GET['do']=='register') {
   draw_header('Register');
   print "<div class='user_form'>";
   print "<form action='login.php' method='post'>";
+  print "<p>Please register with an email address and password.</p>";
   print "<p class='user_form_desc'>Email address (for logging in):</p><input type='text' name='email' /><br />";
   print "<p class='user_form_desc'>Password:</p><input type='password' name='pword' /><br />";
   print "<input type='hidden' name='do' value='register' />";

@@ -241,7 +241,8 @@ if ($_SESSION['userlevel'] <= 1) { //TODO: Only allow certain users to see colum
 }
 
 $conn = $conn = new mysqli("localhost",$db_username,$db_password,$db_name);
-$query = sprintf("SELECT tablefile, name, row, col FROM traffic_images WHERE col = %d AND broken != 1 ORDER BY rand() LIMIT 1",$col);
+//$query = sprintf("SELECT tablefile, name, row, col FROM traffic_images WHERE col = %d AND broken != 1 ORDER BY rand() LIMIT 1",$col);
+$query = sprintf("SELECT tablefile, name, row, col FROM traffic_images WHERE col = %d AND (SELECT COUNT(*) FROM traffic_results_col%d WHERE name=traffic_images.name)<3 ORDER BY rand() LIMIT 1",$col,$col);
 $res = $conn->query($query);
 $conn->close();
 $data = mysqli_fetch_row($res);

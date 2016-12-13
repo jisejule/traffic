@@ -70,7 +70,7 @@ $conn->close();
     n = parseInt(n) + delta;
     if (isNaN(n)) {n = 1;}
     if (n<1) { n = 1; }
-    if (n>6) { n = 6; }
+    if (n>10) { n = 10; }
     $('input#numRows').val(n);
     noRows = n;
     recalcGrid()
@@ -176,11 +176,15 @@ $conn->close();
  </head>
  <body>
  <?php draw_header('Segmentation'); ?>
- <div style="width:600px; margin-left:30px;">
- <p>Drag the coloured circles to align the grid over the photographed table. It often fits best if you <em>don't include the far left and right columns</em>. Adjust the number of rows at the bottom using the + and - buttons. Once you are happy it's in the right place, with the right number of rows, press 'Next'.</p>
- </div>
+ <div class='user_form'>
+
+ <p>Drag the coloured circles to align the grid over the photographed table. It often fits best if you <em>don't include the far left and right columns</em>. Adjust the number of rows at the bottom using the + and - buttons. Once you are happy it's in the right place, with the right number of rows, press 'Next'.
+ </p>
+ <p>
+ <br />
+ </p>
  <div id="canvas_container" style="width:667px; height:500px;"></div>
- <div style="margin-top:15px;">
+ <div style="margin-top:5px;">
  <p>
  <span>
  Number of rows<button style="width:20px" id="lessRows">-</button><input type="text" size=1 value="1" style="width:20px;" disabled="disabled" id="numRows"></input><button style="width:20px" id="moreRows">+</button>
@@ -189,6 +193,7 @@ $conn->close();
  <button style="width:100px; height:50px;" id="next">Next</button>
  <button style="width:100px; height:50px;" id="skip">Skip</button>
  </span>
+ </div>
  </p>
  </div>
  </body>

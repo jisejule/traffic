@@ -11,7 +11,7 @@ function get_numberdone()
    $conn = new mysqli("localhost",$db_username,$db_password,$db_name);
    if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error. "$db_username,$db_password,$db_name"); }
    $total = 0;
-   foreach (array(0,3,4,6,7) as $col) {
+   foreach (array(0,3,4,6,7,8,9) as $col) {
   //  $total += $conn->query(sprintf("SELECT count(*) AS totalcount FROM traffic_results_col%d WHERE userid=%d;",$col,$userid))->fetch_assoc()['totalcount'];
      $query = $conn->prepare(sprintf("SELECT count(*) AS totalcount FROM traffic_results_col%d WHERE userid=?;",$col));
      $query->bind_param('i',$userid);
@@ -56,21 +56,28 @@ function get_username()
 
 function draw_header($title)
 {
-  $sitename = "Kampala Crash Collaboration";
-  print "<div class='header'><p><span class='title'>$sitename: $title</span>";
+  $sitename = "Crash Map Kampala";
+  print "<div class='header'><p><a href='index.php'><span class='title'>$sitename";
+  if (strlen($title)>1) {
+    print ": $title";
+  }
+  print "</span></a>";
   $username = get_username();
   $userid = get_userid();
   $done = get_numberdone(); 
   $userlevel = get_userlevel();
-  print "<span class='welcome'>Welcome $username &nbsp; [$done solved] {access-level: $userlevel} &nbsp;";
+  print "<span class='welcome'>";
+  if ($username != 'guest') {
+    print "$username - $done solved &nbsp; &nbsp;";
+  }
   if ($userid>0) {
-    print "(<a href='login.php?do=logout'>logout</a>)";
+    print " <a href='login.php?do=logout'>logout</a> |";
   }
   else
   {
-    print "(<a href='login.php?do=register'>register</a>/<a href='login.php?do=login'>login</a>)";
+    print "<a href='login.php?do=register'>register</a> | <a href='login.php?do=login'>login</a> | ";
   }
-  print " <a href='index.php'>home</a></span></p></div>";
+  print " <a href='index.php'>home</a> | <a href='about.php'>about</a></span></p></div>";
 }
 
 
